@@ -15,16 +15,6 @@ const GLfloat TO_RADIANS = PI/180.0;
 const GLint INIT_WINDOW_POSITION[2] = { 150, 150 };
 const GLfloat ASPECT_RATIO = 1.5;
 
-// Lighting Constants
-//const GLfloat LIGHT_0_POSITION[]    = { 1.0, 0.0, 0.0, 0.0};
-//const GLfloat LIGHT_1_POSITION[]    = { -1.0, 0.0, 0.0, 0.0};
-//const GLfloat LIGHT_2_POSITION[]    = { 0.0, 0.0, 1.0, 0.0};
-//const GLfloat LIGHT_3_POSITION[]    = { 0.0, 0.0, -1.0, 0.0};
-//const GLfloat LIGHT_AMBIENT[]       = { 0.8, 0.8, 0.8, 1.0};
-//const GLfloat LIGHT_DIFFUSE[]       = { 0.9, 0.9, 0.9, 1.0};
-//const GLfloat LIGHT_SPECULAR[]      = { 1.0, 1.0, 1.0, 1.0};
-//const GLfloat LIGHT_MODEL_AMBIENT[] = { 0.2, 0.2, 0.2, 1.0};
-
 // Earth and Moon Constants
 const char EARTH_BMP_FILENAME[] = "Bitmaps/earthmap.bmp";
 const char MOON_BMP_FILENAME[]  = "Bitmaps/moonmap.bmp";
@@ -68,15 +58,16 @@ const GLfloat PLUTO_RADIUS = 		0.05;
 const GLfloat SUN_RADIUS = 			1.0;
 
 //Additional Planets Constants for Orbit Radius
-const GLfloat MERCURY_ORBIT_RADIUS = 1.5;
-const GLfloat VENUS_ORBIT_RADIUS =	 2.0;
-const GLfloat MARS_ORBIT_RADIUS = 	 3.5;
-const GLfloat JUPITER_ORBIT_RADIUS = 5.0;
-const GLfloat SATURN_ORBIT_RADIUS =  7.0;
-const GLfloat URANUS_ORBIT_RADIUS =	 8.5;
-const GLfloat NEPTUNE_ORBIT_RADIUS = 9.0;
-const GLfloat PLUTO_ORBIT_RADIUS = 	 10.0;
-const GLfloat EARTH_ORBIT_RADIUS = 	 3.0;
+const GLfloat MERCURY_ORBIT_RADIUS = 2.0;
+const GLfloat VENUS_ORBIT_RADIUS =	 3.0;
+const GLfloat EARTH_ORBIT_RADIUS =   4.0;
+const GLfloat MARS_ORBIT_RADIUS = 	 5.5;
+const GLfloat JUPITER_ORBIT_RADIUS = 7.0;
+const GLfloat SATURN_ORBIT_RADIUS =  9.5;
+const GLfloat URANUS_ORBIT_RADIUS =	 12.0;
+const GLfloat NEPTUNE_ORBIT_RADIUS = 13.5;
+const GLfloat PLUTO_ORBIT_RADIUS = 	 15.0;
+
 
 //Additional Planets Constants for Orbit Duration
 const GLfloat MERCURY_ORBIT_DUR = 88;
