@@ -1,8 +1,3 @@
-//SolarSystem.cpp
-//3D Texture Mapped Model of the Solar System
-//Modeled to An Approximate Logarithmic Scale
-//Particle System For The Sun Implemented
-
 #include "glut.h"
 #include <windows.h>
 
@@ -52,7 +47,6 @@ ParticleSystem particles;
 bool particleFlag = true;
 bool blendFlag = true;
 
-
 /***********************/
 /* Function prototypes */
 /***********************/
@@ -67,14 +61,11 @@ void MakeImage(const char bitmapFilename[], GLuint &textureName, bool hasAlpha);
 void ResizeWindow(GLsizei w, GLsizei h);
 void drag(int x, int y);
 
-void drawEarthAndMoon();
 void drawSun();
 void drawSaturnRing();
-void drawAllPlanets();
 void drawPlanet(GLfloat inclination, GLfloat orbitDuration,	GLfloat orbitRadius, GLfloat rotationDuration, GLuint texturename, GLfloat radius);
 void drawParticle(Particle currParticle);
 void drawAllParticles();
-
 void drawOrbit(double x, double y, double z, double r, int num_segments);
 void drawMoon(GLfloat inclination, GLfloat orbitDuration, GLfloat planetOrbitDuration, GLfloat orbitRadius, GLfloat planetOrbitRadius, GLfloat rotationDuration, GLuint texturename, GLfloat radius);
 
@@ -82,11 +73,13 @@ void drawMoon(GLfloat inclination, GLfloat orbitDuration, GLfloat planetOrbitDur
 /* Function implementations */
 /****************************/
 
-// The main function sets up the data and the   //
-// environment to display the textured objects. //
+// The main function from the github project sets up the GLUT/OpenGL environment as well as the window
 int main(int argc, char** argv)
 {
+	//Initialize the glut API
 	glutInit(&argc, argv);
+
+	//glut API wraps OpenGL and provides an easier interface
 
 	// Set up the display window.
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_STENCIL | GLUT_DEPTH);
@@ -94,37 +87,41 @@ int main(int argc, char** argv)
 	glutInitWindowSize(currWindowSize[0], currWindowSize[1]);
 	glutCreateWindow("Solar System");
 
-	// Specify the resizing and refreshing routines.
-	glutReshapeFunc(ResizeWindow);
-	glutKeyboardFunc(KeyboardPress);
-	glutSpecialFunc(NonASCIIKeyboardPress);
-	glutDisplayFunc(Display);
-	glutTimerFunc(20, TimerFunction, 1);
-	glViewport(0, 0, currWindowSize[0], currWindowSize[1]);
+	//GLUT provides function hooks and you give it your functions to use.
+
+	//Provide functions to GLUT/OpenGL
+	glutReshapeFunc(ResizeWindow);           //Update scene when window is resized
+	glutKeyboardFunc(KeyboardPress);         //Process keyboard input for zooming and controlling animations
+	glutSpecialFunc(NonASCIIKeyboardPress);  //Process keyboard input for moving the camera
+	glutDisplayFunc(Display);                //Display function updates the scene
+	glutTimerFunc(20, TimerFunction, 1);     //Set Animation timer
+	glViewport(0, 0, currWindowSize[0], currWindowSize[1]);  //Where camera is viewing
 	
-	glutMotionFunc(drag);
+	//GLUT uses a state machine to track all current settings to be rendered.  
 
 	// Set up standard lighting, shading, and depth testing.
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);								// The Type Of Depth Testing To Do
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);	// Really Nice Perspective Calculations
-	glEnable(GL_NORMALIZE);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glShadeModel(GL_SMOOTH);  //Sets shader type
+	glEnable(GL_DEPTH_TEST);  //Begin tracking Depth edits
+	glDepthFunc(GL_LEQUAL);	  //set depth buffer
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //smooths camera movement
+	glEnable(GL_NORMALIZE);   //begin tracking normalization
+	glCullFace(GL_BACK);      //cull the opposite face of objects
+	glEnable(GL_CULL_FACE);   //tracking culling edits
+	glClearColor(0.0, 0.0, 0.0, 0.0);        //reset material colors
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);   //sets pixel storage mode
 
-	// Set up all texture maps and texture-mapped objects.
-	MakeAllImages();
-	glutMainLoop();
+	MakeAllImages();  //Get the texture images
+	glutMainLoop();   //Main graphics render loop
 	return 0;
 }
 
 
-
+// === UPDATE ADDED ===================================================================================
 
 //++++++++++++++++++++++++++++++++++
+
+//This is our attempt to add camera control based on mouse movement
+//Currently does not work
 
 
 
@@ -234,38 +231,38 @@ void drag(int x, int y)
 
 //++++++++++++++++++++++++++++++++++
 
+// === End UPDATE ===================================================================================
 
 
-
-// Function to react to ASCII keyboard keys pressed by the user.   //
-// +/- keys are used to accelerate/decelerate the animation, while //
-// the z/Z keys are used to zoom in and out of the animation.      //
+//Function from github to process keyboard inputs
+// +/- keys will speed up/slow down the animation
+// the z/Z keys are used to zoom in and out 
 void KeyboardPress(unsigned char pressedKey, int mouseXPosition, int mouseYPosition)
 {
-	char pressedChar = char(pressedKey);
-	switch (pressedKey)
+	char pressedChar = char(pressedKey); //Get the key that was pressed
+	switch (pressedKey) //Check the key
 	{
-	case '=': {
-		EarthDayIncrement *= 2.0;
+	case '=': { //speed up simulation
+		EarthDayIncrement *= 2.0; //Increases simulation step increment
 		if (EarthDayIncrement > 10.0)
 			EarthDayIncrement = 10.0;
 		break;
 	}
-	case '-': {
-		EarthDayIncrement *= 0.5;
+	case '-': { //slow down simulation
+		EarthDayIncrement *= 0.5; //decreases simulation step increment
 		if (EarthDayIncrement < 0.01)
 			EarthDayIncrement = 0.01;
 		break;
 	}
-	case 'z': {
-		ViewerDistance -= VIEWER_DISTANCE_INCREMENT;
-		if (ViewerDistance < MINIMUM_VIEWER_DISTANCE)
+	case 'z': { //zoom in camera
+		ViewerDistance -= VIEWER_DISTANCE_INCREMENT; //reduce camera distance
+		if (ViewerDistance < MINIMUM_VIEWER_DISTANCE) //limit zoom in
 			ViewerDistance = MINIMUM_VIEWER_DISTANCE;
 		break;
 	}
-	case 'Z': {
-		ViewerDistance += VIEWER_DISTANCE_INCREMENT;
-		if (ViewerDistance > MAXIMUM_VIEWER_DISTANCE)
+	case 'Z': { //zoom out camera
+		ViewerDistance += VIEWER_DISTANCE_INCREMENT; //increase camera distance
+		if (ViewerDistance > MAXIMUM_VIEWER_DISTANCE) //limit zoom out
 			ViewerDistance = MAXIMUM_VIEWER_DISTANCE;
 		break;
 	}
@@ -282,56 +279,60 @@ void KeyboardPress(unsigned char pressedKey, int mouseXPosition, int mouseYPosit
 	}
 }
 
-// Function to react to non-ASCII keyboard keys pressed by the user. //
-// Used to alter spherical coordinates of the viewer's position.     //
+//Function from github to process more keyboard inputs
+// Used to modify the camera x,y,z position for translation and rotation movement.
 void NonASCIIKeyboardPress(int pressedKey, int mouseXPosition, int mouseYPosition)
 {
 	glutIgnoreKeyRepeat(false);
 
+// === UPDATED ADDED ===================================================================================
 	if (glutGetModifiers() & GLUT_ACTIVE_SHIFT)
 	{
+		//Pan the camera - new function that was added
 		switch (pressedKey)
 		{
-		case GLUT_KEY_RIGHT:
-			LOOK_AT_POSITION[0] += 0.1;
+		case GLUT_KEY_RIGHT:              
+			LOOK_AT_POSITION[0] += 0.1; //increment x-axis position
 			break;
 		case GLUT_KEY_LEFT:
-			LOOK_AT_POSITION[0] -= 0.1;
+			LOOK_AT_POSITION[0] -= 0.1; //decrement x-axis position
 			break;
 		case GLUT_KEY_UP:
-			LOOK_AT_POSITION[2] += 0.1;
+			LOOK_AT_POSITION[2] += 0.1; //increment z-axis position
 			break;
 		case GLUT_KEY_DOWN:
-			LOOK_AT_POSITION[2] -= 0.1;
+			LOOK_AT_POSITION[2] -= 0.1; //decrement z-axis position
 			break;
 		}
 	}
+// === END UPDATE ===================================================================================
 	else
 	{
+		//Rotate the camera
 		switch (pressedKey)
 		{
-		case GLUT_KEY_RIGHT:
-			viewerAzimuth += VIEWER_ANGLE_INCREMENT;
+		case GLUT_KEY_RIGHT:                      
+			viewerAzimuth += VIEWER_ANGLE_INCREMENT; //clockwise rotation
 			if (viewerAzimuth > 2 * PI) viewerAzimuth -= 2 * PI;
 			break;
 		case GLUT_KEY_LEFT:
-			viewerAzimuth -= VIEWER_ANGLE_INCREMENT;
+			viewerAzimuth -= VIEWER_ANGLE_INCREMENT; //counter clockwise rotation
 			if (viewerAzimuth < 0.0) viewerAzimuth += 2 * PI;
 			break;
 		case GLUT_KEY_UP:
-			viewerZenith -= VIEWER_ANGLE_INCREMENT;
+			viewerZenith -= VIEWER_ANGLE_INCREMENT; //rotate up
 			if (viewerZenith < VIEWER_ANGLE_INCREMENT) viewerZenith = VIEWER_ANGLE_INCREMENT;
 			break;
 		case GLUT_KEY_DOWN:
-			viewerZenith += VIEWER_ANGLE_INCREMENT;
+			viewerZenith += VIEWER_ANGLE_INCREMENT; //rotate down
 			if (viewerZenith > PI - VIEWER_ANGLE_INCREMENT) viewerZenith = PI - VIEWER_ANGLE_INCREMENT;
 			break;
 		}
 	}
 }
 
-// The EarthDayIncrement represents the fraction of an      //
-// Earth day being added to the scene in one screen update. //
+//Function for simulating time based on Earth and used to update positions of planets for the animations
+//The GLUT render loop calls this function for incrementing the simulation
 void TimerFunction(int value)
 {
 	CurrentEarthRotation += EarthDayIncrement;
@@ -342,12 +343,13 @@ void TimerFunction(int value)
 	glutTimerFunc(20, TimerFunction, 1);
 }
 
-// Principal display routine: sets up material, lighting, //
-// and camera properties, clears the frame buffer, and    //
-// draws all texture-mapped objects within the window.    //
+// Important function
+// This is main display function: it sets up materials for objects, lighting and camera position.
+// Also sets up for drawing maps, textures and objects (sun, planets, moon, etc) within the window.
+// Basically, draws everything
 void Display()
 {
-	// Set up the properties of the viewing camera.
+	// Sets up the view matricies
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
     gluPerspective(60.0, ASPECT_RATIO, 0.2, 100.0);
@@ -355,22 +357,28 @@ void Display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	sqr->draw(sqr);
-
-	// Position and orient viewer.
+	// Calculate camera position
 	gluLookAt(LOOK_AT_POSITION[0] + ViewerDistance * sin(viewerZenith) * sin(viewerAzimuth),
 			  LOOK_AT_POSITION[1] + ViewerDistance * cos(viewerZenith), 
 			  LOOK_AT_POSITION[2] + ViewerDistance * sin(viewerZenith) * cos(viewerAzimuth),
 			  LOOK_AT_POSITION[0], LOOK_AT_POSITION[1], LOOK_AT_POSITION[2],
 			  0.0, 1.0, 0.020);
 
-	// Render scene.
+	// Draw the scene - draw each object
 	drawSun();
+	drawPlanet(MERCURY_INCLINATION, MERCURY_ORBIT_DUR, MERCURY_ORBIT_RADIUS, MERCURY_ROTATION_DUR, MercuryTextureName, MERCURY_RADIUS);
+	drawPlanet(VENUS_INCLINATION, VENUS_ORBIT_DUR, VENUS_ORBIT_RADIUS, VENUS_ROTATION_DUR, VenusTextureName, VENUS_RADIUS);
+	drawPlanet(EARTH_INCLINATION, EARTH_ORBIT_DUR, EARTH_ORBIT_RADIUS, EARTH_ROTATION, EarthTextureName, EARTH_RADIUS);
+	drawPlanet(MARS_INCLINATION, MARS_ORBIT_DUR, MARS_ORBIT_RADIUS, MARS_ROTATION_DUR, MarsTextureName, MARS_RADIUS);
+	drawPlanet(JUPITER_INCLINATION, JUPITER_ORBIT_DUR, JUPITER_ORBIT_RADIUS, JUPITER_ROTATION_DUR, JupiterTextureName, JUPITER_RADIUS);
+	drawPlanet(SATURN_INCLINATION, SATURN_ORBIT_DUR, SATURN_ORBIT_RADIUS, SATURN_ROTATION_DUR, SaturnTextureName, SATURN_RADIUS);
+	drawPlanet(URANUS_INCLINATION, URANUS_ORBIT_DUR, URANUS_ORBIT_RADIUS, URANUS_ROTATION_DUR, UranusTextureName, URANUS_RADIUS);
+	drawPlanet(NEPTUNE_INCLINATION, NEPTUNE_ORBIT_DUR, NEPTUNE_ORBIT_RADIUS, NEPTUNE_ROTATION_DUR, NeptuneTextureName, NEPTUNE_RADIUS);
+	drawPlanet(PLUTO_INCLINATION, PLUTO_ORBIT_DUR, PLUTO_ORBIT_RADIUS, PLUTO_ROTATION_DUR, PlutoTextureName, PLUTO_RADIUS);
 	drawMoon(EARTH_INCLINATION, LUNAR_CYCLE, EARTH_ORBIT_DUR, MOON_ORBIT_RADIUS, EARTH_ORBIT_RADIUS, LUNAR_CYCLE, MoonTextureName, MOON_RADIUS);
-	drawAllPlanets();
 	drawSaturnRing();
 	
-
+	//Calculate particles animation
 	if(blendFlag){ //if the user has selected blending, enable it.
 		glEnable(GL_BLEND);
 		glDepthMask(GL_FALSE);
@@ -379,14 +387,14 @@ void Display()
 	if(particleFlag)
 		drawAllParticles();
 
-		glDepthMask(GL_TRUE);
-		glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
 	glutSwapBuffers();
 	glFlush();
 }
 
-// Create the textures associated with all texture-mapped objects being displayed. //
+//Function from github to read in the bitmap image files to create the textures for each of the planets
 void MakeAllImages()
 {
 	MakeImage(EARTH_BMP_FILENAME, EarthTextureName, false);
@@ -404,21 +412,7 @@ void MakeAllImages()
 	MakeImage(RING_BMP_FILENAME, RingTextureName, false);
 }
 
-//makes calls to the generic planet drawing function. took this out
-//of the display function to enhance readability
-void drawAllPlanets(){
-	drawPlanet(MERCURY_INCLINATION, MERCURY_ORBIT_DUR, MERCURY_ORBIT_RADIUS, MERCURY_ROTATION_DUR, MercuryTextureName, MERCURY_RADIUS);
-	drawPlanet(VENUS_INCLINATION, VENUS_ORBIT_DUR, VENUS_ORBIT_RADIUS, VENUS_ROTATION_DUR, VenusTextureName, VENUS_RADIUS);
-	drawPlanet(EARTH_INCLINATION, EARTH_ORBIT_DUR, EARTH_ORBIT_RADIUS, EARTH_ROTATION, EarthTextureName, EARTH_RADIUS);
-	drawPlanet(MARS_INCLINATION, MARS_ORBIT_DUR, MARS_ORBIT_RADIUS, MARS_ROTATION_DUR, MarsTextureName, MARS_RADIUS);
-	drawPlanet(JUPITER_INCLINATION, JUPITER_ORBIT_DUR, JUPITER_ORBIT_RADIUS, JUPITER_ROTATION_DUR, JupiterTextureName, JUPITER_RADIUS);
-	drawPlanet(SATURN_INCLINATION, SATURN_ORBIT_DUR, SATURN_ORBIT_RADIUS, SATURN_ROTATION_DUR, SaturnTextureName, SATURN_RADIUS);
-	drawPlanet(URANUS_INCLINATION, URANUS_ORBIT_DUR, URANUS_ORBIT_RADIUS, URANUS_ROTATION_DUR, UranusTextureName, URANUS_RADIUS);
-	drawPlanet(NEPTUNE_INCLINATION, NEPTUNE_ORBIT_DUR, NEPTUNE_ORBIT_RADIUS,	NEPTUNE_ROTATION_DUR, NeptuneTextureName, NEPTUNE_RADIUS);
-	drawPlanet(PLUTO_INCLINATION, PLUTO_ORBIT_DUR, PLUTO_ORBIT_RADIUS, PLUTO_ROTATION_DUR, PlutoTextureName, PLUTO_RADIUS);
-}
-
-// Convert the bitmap with the parameterized name into an OpenGL texture. //
+// Function from github to convert the bitmap to a texture. Used to help the function above
 void MakeImage(const char bitmapFilename[], GLuint &textureName, bool hasAlpha)
 {
 	RGBpixmap pix;
@@ -426,8 +420,7 @@ void MakeImage(const char bitmapFilename[], GLuint &textureName, bool hasAlpha)
 	pix.setTexture(textureName);
 }
 
-// Window-reshaping callback, adjusting the viewport to be as large  //
-// as possible within the window, without changing its aspect ratio. //
+//Function from github to re-draw the graphics when the window size is changed
 void ResizeWindow(GLsizei w, GLsizei h)
 {
 	currWindowSize[0] = w;
@@ -453,10 +446,13 @@ void ResizeWindow(GLsizei w, GLsizei h)
 }
 
 
-
 //Function to draw and texture map the sun at the origin.  The sun acts as the light source
 void drawSun()
 {
+	// === UPDATE ADDED ===================================================================================
+
+	//Removed 
+
 	const GLfloat LIGHT_AMBIENT[] = { 0.2, 0.2, 0.2, 1.0 };
 	const GLfloat LIGHT_DIFFUSE[] = { 1.0, 1.0, 1.0, 1.0 };
 	const GLfloat LIGHT_SPECULAR[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -469,6 +465,8 @@ void drawSun()
 	glLightfv(GL_LIGHT0, GL_SPECULAR, LIGHT_SPECULAR);
 	glLightfv(GL_LIGHT0, GL_POSITION, LIGHT_POSITION);
 	glEnable(GL_LIGHT0);
+
+	// === END UPDATE ===================================================================================
 
 	GLUquadricObj* quadro = gluNewQuadric();
 	gluQuadricNormals(quadro, GLU_SMOOTH);
@@ -486,30 +484,37 @@ void drawSun()
 	gluDeleteQuadric(quadro);
 }
 
+// === UPDATE ADDED ===================================================================================
 
-//Draws the texture-mapped earth and moon. //
+//Function draws the moon.  Updated so we can draw any moon around any planet
+//Function repeats the planet drawing function but takes planet info to draw the moon around the planet instead of the sun
 void drawMoon(GLfloat inclination, GLfloat orbitDuration, GLfloat planetOrbitDuration, GLfloat orbitRadius, GLfloat planetOrbitRadius, GLfloat rotationDuration, GLuint texturename, GLfloat radius)
 {
 	GLUquadricObj* quadro = gluNewQuadric();							
-	gluQuadricNormals(quadro, GLU_SMOOTH);		
-	gluQuadricTexture(quadro, GL_TRUE);			
-	glEnable(GL_TEXTURE_2D);
-		glPushMatrix();
-			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			glRotatef(inclination, 0.0, 0.0, 1.0);
+	gluQuadricNormals(quadro, GLU_SMOOTH);		//Provides normal map for the moon
+	gluQuadricTexture(quadro, GL_TRUE);			//Provides texture for the moon
+	glEnable(GL_TEXTURE_2D);                    //Set OpenGL to accept texture edits
+		glPushMatrix();                         //Set put drawing info on OpenGL's data stack
+			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);   //Set Texture environment
+			
+			//Rotate and translate moon position based on time passed
+			glRotatef(inclination, 0.0, 0.0, 1.0);                         
 			glRotatef( 360.0 * (EarthDaysTranspired/planetOrbitDuration), 0.0, 1.0, 0.0);
 			glTranslatef(planetOrbitRadius, 0.0, 0.0 );
 			glRotatef( 360.0 * EarthDaysTranspired / rotationDuration, 0.0, 1.0, 0.0 );
 			glTranslatef(orbitRadius, 0.0, 0.0 );
-			glBindTexture(GL_TEXTURE_2D, MoonTextureName);
-			gluSphere(quadro, radius, 48, 48);
-		glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
+
+			glBindTexture(GL_TEXTURE_2D, MoonTextureName); //Add texture image
+			gluSphere(quadro, radius, 48, 48);             //Draw the moon
+		glPopMatrix();                        //End this drawing
+	glDisable(GL_TEXTURE_2D);                 //End current OpenGL texture edit
 	gluDeleteQuadric(quadro);
 }
 
+// === END UPDATE ===================================================================================
 
-//Draw Rings
+
+//Function from github to draw a ring on saturn.  The ring is actually a flattened sphere.
 void drawSaturnRing()
 {
 	GLUquadricObj* quadro = gluNewQuadric();							
@@ -532,29 +537,31 @@ void drawSaturnRing()
 	gluDeleteQuadric(quadro);
 }
 
+// === UPDATE ADDED ===================================================================================
+
+//Function draws the lines showing planet orbit
+//It actually draws a disk with a large inner radius and is affected by light
 void drawOrbit(double x, double y, double z, double r, int num_segments)
 {
-	glEnable(GL_COLOR_MATERIAL);
-	glColor3f(1.0f, 1.0f, 1.0f);
-
+	glEnable(GL_COLOR_MATERIAL); //tells OpenGL to begin tracking changes to object material
+	glColor3f(1.0f, 1.0f, 1.0f); //Set the color to white, it will still be affected by lighting
 
 	GLUquadricObj* quadro = gluNewQuadric();
-	gluQuadricNormals(quadro, GLU_SMOOTH);
-	gluQuadricTexture(quadro, GL_TRUE);
+	gluQuadricNormals(quadro, GLU_SMOOTH); //Provide a normal map for the disk
 	glPushMatrix();
-		glTranslatef(0.0, 0.0, 0.0);
-		glRotatef(-90.0, 1.0, 0.0, 0.0);
-		gluDisk(quadro, r - 0.01, r + 0.01, num_segments, 1);
+		glTranslatef(0.0, 0.0, 0.0); //Put the center of the disk in the center of the scene
+		glRotatef(-90.0, 1.0, 0.0, 0.0); //Rotate the disk so it appears horizontal
+		gluDisk(quadro, r - 0.01, r + 0.01, num_segments, 1); //Draw the disk based on planet orbit radius
 	glPopMatrix();
 	gluDeleteQuadric(quadro);
 	glDisable(GL_COLOR_MATERIAL);
 }
 
+// === END UPDATE ===================================================================================
 
-//Given parameters about the planets dimension, orbit, radius etc, this function
-//will draw a texture mapped plant.
-//it is used to draw everything except the sun, earth/moon. and saturns rings, as
-//they are special cases of this function
+//Modified function from github to include drawing orbit ring
+//Given parameters about the planets dimension, orbit, radius etc, this function will draw a textured planet.
+//it is used to draw everything except the sun and saturns rings. 
 void drawPlanet(GLfloat inclination, GLfloat orbitDuration, GLfloat orbitRadius, GLfloat rotationDuration, GLuint texturename, GLfloat radius)
 {
 	GLUquadricObj* quadro = gluNewQuadric();							
@@ -579,17 +586,17 @@ void drawPlanet(GLfloat inclination, GLfloat orbitDuration, GLfloat orbitRadius,
 	drawOrbit(0.0, 0.0, 0.0, orbitRadius, 64);
 }
 
-//Cycles through each particle in the particle system and passes it to the
-//draw function
+//Functions from github to draw particles
+
+//Cycles through each particle in the particle system and passes it to the draw function
 void drawAllParticles(){
 	particles.updateAll();
 	for(int i = 0; i < particles.getNumberOfParticles(); i++)
 		drawParticle(particles.getNextParticle());
-
 }
 
-//Draws one individual particle, given a particle struct from the particle
-//system object
+//Draws one individual particle, given a particle struct from the particle system object
+//Provides the particle animation effect
 void drawParticle(Particle currParticle)
 {	
 	glEnable(GL_TEXTURE_2D);
