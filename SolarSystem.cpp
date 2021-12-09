@@ -451,8 +451,6 @@ void drawSun()
 {
 	// === UPDATE ADDED ===================================================================================
 
-	//Removed 
-
 	const GLfloat LIGHT_AMBIENT[] = { 0.2, 0.2, 0.2, 1.0 };
 	const GLfloat LIGHT_DIFFUSE[] = { 1.0, 1.0, 1.0, 1.0 };
 	const GLfloat LIGHT_SPECULAR[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -544,7 +542,7 @@ void drawSaturnRing()
 void drawOrbit(double x, double y, double z, double r, int num_segments)
 {
 	glEnable(GL_COLOR_MATERIAL); //tells OpenGL to begin tracking changes to object material
-	glColor3f(1.0f, 1.0f, 1.0f); //Set the color to white, it will still be affected by lighting
+	glColor3f(1.0f, 1.0f, 1.0f); //Set the color to white, removes lighting except for ambient
 
 	GLUquadricObj* quadro = gluNewQuadric();
 	gluQuadricNormals(quadro, GLU_SMOOTH); //Provide a normal map for the disk
